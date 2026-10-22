@@ -1,6 +1,5 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -156,7 +155,8 @@ class XueHuaNaviteShareWeb extends XueHuaNaviteSharePlatform {
       return const ShareResult(
         status: ShareResultStatus.fallbackExecuted,
         selectedActivityType: 'browser.download',
-        message: 'Web Share API for files was unavailable; triggered browser file download fallback.',
+        message:
+            'Web Share API for files was unavailable; triggered browser file download fallback.',
       );
     }
 
@@ -166,7 +166,8 @@ class XueHuaNaviteShareWeb extends XueHuaNaviteSharePlatform {
 
     return const ShareResult(
       status: ShareResultStatus.unavailable,
-      message: 'Web Share API is unavailable in this browser context (requires HTTPS or localhost).',
+      message:
+          'Web Share API is unavailable in this browser context (requires HTTPS or localhost).',
     );
   }
 

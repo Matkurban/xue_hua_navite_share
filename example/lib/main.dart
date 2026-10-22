@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:xue_hua_navite_share/xue_hua_navite_share.dart';
+import 'package:xue_hua_navite_share_example/app_theme.dart';
 
 void main() {
   runApp(const XueHuaShareExampleApp());
@@ -18,10 +19,9 @@ class XueHuaShareExampleApp extends StatelessWidget {
     return MaterialApp(
       title: 'XueHua Native Share Demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2563EB)),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       home: const ShareWorkbenchPage(),
     );
   }
@@ -109,9 +109,9 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   }
 
   List<ShareActivityType> get _selectedExclusions => <ShareActivityType>[
-        if (_excludePrint) ShareActivityType.print,
-        if (_excludeAirDrop) ShareActivityType.airDrop,
-      ];
+    if (_excludePrint) ShareActivityType.print,
+    if (_excludeAirDrop) ShareActivityType.airDrop,
+  ];
 
   Future<void> _handleShareText(BuildContext buttonContext) async {
     final result = await _sharePlugin.shareText(
@@ -130,12 +130,14 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
     final uri = Uri.tryParse(_urlController.text.trim());
     if (uri == null) return;
 
+    Uint8List previewUint8List = await _buildSamplePngBytes();
+
     final result = await _sharePlugin.shareUri(
       uri,
       title: _titleController.text,
       subject: _subjectController.text,
       message: _textController.text,
-      previewThumbnail: _buildSamplePngBytes(),
+      previewThumbnail: previewUint8List,
       anchorRect: _resolveAnchorRect(buttonContext),
       preferredEdge: _preferredEdge,
       excludedActivityTypes: _selectedExclusions,
@@ -145,13 +147,16 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   }
 
   Future<void> _handleShareMemoryItems(BuildContext buttonContext) async {
-    final jsonContent = const JsonEncoder.withIndent('  ').convert(<String, Object?>{
-      'plugin': 'xue_hua_navite_share',
-      'author': 'Matkurban',
-      'email': '3496354336@qq.com',
-      'repository': 'https://github.com/Matkurban/xue_hua_navite_share',
-      'timestamp': DateTime.now().toIso8601String(),
-    });
+    final jsonContent = const JsonEncoder.withIndent('  ')
+        .convert(<String, Object?>{
+          'plugin': 'xue_hua_navite_share',
+          'author': 'Matkurban',
+          'email': '3496354336@qq.com',
+          'repository': 'https://github.com/Matkurban/xue_hua_navite_share',
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+
+    Uint8List previewUint8List = await _buildSamplePngBytes();
 
     final memoryItems = <ShareItem>[
       ShareItem.memory(
@@ -161,7 +166,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
         subject: _subjectController.text,
       ),
       ShareItem.memory(
-        bytes: _buildSamplePngBytes(),
+        bytes: previewUint8List,
         fileName: 'sample_badge.png',
         mimeType: 'image/png',
         subject: 'Sample PNG Image',
@@ -191,7 +196,8 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
       setState(() {
         _lastResult = const ShareResult(
           status: ShareResultStatus.error,
-          message: 'Please enter at least one local file path separated by commas.',
+          message:
+              'Please enter at least one local file path separated by commas.',
         );
       });
       return;
@@ -217,6 +223,8 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
         .where((e) => e.isNotEmpty)
         .toList();
 
+    Uint8List previewUint8List = await _buildSamplePngBytes();
+
     final params = ShareParams(
       items: <ShareItem>[
         ShareItem.memory(
@@ -229,7 +237,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
       uri: uri,
       subject: _subjectController.text,
       title: _titleController.text,
-      previewThumbnail: _buildSamplePngBytes(),
+      previewThumbnail: previewUint8List,
       anchorRect: _resolveAnchorRect(buttonContext),
       preferredEdge: _preferredEdge,
       excludedActivityTypes: _selectedExclusions,
@@ -263,10 +271,9 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   }
 
   /// Generates a valid 1x1 blue PNG image in memory for rich preview & file tests.
-  Uint8List _buildSamplePngBytes() {
-    return base64Decode(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkWPjfDwAEgQH461552wAAAABJRU5ErkJggg==',
-    );
+  Future<Uint8List> _buildSamplePngBytes() async {
+    ByteData byteData = await rootBundle.load('assets/images/img1.jpg');
+    return byteData.buffer.asUint8List();
   }
 
   @override
@@ -339,7 +346,9 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                     ),
                   ),
                   Chip(
-                    label: Text('Popover Anchor: ${caps.supportsAnchorPopover}'),
+                    label: Text(
+                      'Popover Anchor: ${caps.supportsAnchorPopover}',
+                    ),
                   ),
                   Chip(
                     label: Text(
@@ -443,20 +452,20 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             Row(
               children: <Widget>[
                 Expanded(
+                  flex: 12,
                   child: DropdownButtonFormField<ShareTargetService>(
                     initialValue: _targetService,
                     decoration: const InputDecoration(
                       labelText: 'Target Service',
-                      border: OutlineInputBorder(),
+                      visualDensity: VisualDensity.compact,
                     ),
-                    items: ShareTargetService.values
-                        .map(
-                          (service) => DropdownMenuItem<ShareTargetService>(
-                            value: service,
-                            child: Text(service.wireName),
-                          ),
-                        )
-                        .toList(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    items: ShareTargetService.values.map((service) {
+                      return DropdownMenuItem<ShareTargetService>(
+                        value: service,
+                        child: Text(service.wireName),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _targetService = value);
@@ -464,22 +473,22 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 6),
                 Expanded(
+                  flex: 8,
                   child: DropdownButtonFormField<SharePreferredEdge>(
                     initialValue: _preferredEdge,
                     decoration: const InputDecoration(
                       labelText: 'Popover Edge (macOS / iPadOS)',
-                      border: OutlineInputBorder(),
+                      visualDensity: VisualDensity.compact,
                     ),
-                    items: SharePreferredEdge.values
-                        .map(
-                          (edge) => DropdownMenuItem<SharePreferredEdge>(
-                            value: edge,
-                            child: Text(edge.wireName),
-                          ),
-                        )
-                        .toList(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    items: SharePreferredEdge.values.map((edge) {
+                      return DropdownMenuItem<SharePreferredEdge>(
+                        value: edge,
+                        child: Text(edge.wireName),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _preferredEdge = value);
@@ -589,16 +598,22 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 8),
             if (res == null)
-              const Text('Trigger any share action above to inspect the result.')
+              const Text(
+                'Trigger any share action above to inspect the result.',
+              )
             else ...<Widget>[
-              Text('Status: ${res.status.wireName} (isSuccess: ${res.isSuccess})'),
+              Text(
+                'Status: ${res.status.wireName} (isSuccess: ${res.isSuccess})',
+              ),
               Text('Selected Activity: ${res.selectedActivityType ?? "N/A"}'),
               Text('Message: ${res.message ?? "N/A"}'),
             ],
             if (_lastCanShare != null)
               Text('Last canShare() check: $_lastCanShare'),
             if (_lastCleanedCount != null)
-              Text('Last cleanupTempFiles() removed: $_lastCleanedCount file(s)'),
+              Text(
+                'Last cleanupTempFiles() removed: $_lastCleanedCount file(s)',
+              ),
           ],
         ),
       ),
