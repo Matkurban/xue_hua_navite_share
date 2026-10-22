@@ -59,12 +59,7 @@ class ShareAnchorRect {
 
   /// Serializes this rectangle into a platform channel map.
   Map<String, double> toMap() {
-    return <String, double>{
-      'x': x,
-      'y': y,
-      'width': width,
-      'height': height,
-    };
+    return <String, double>{'x': x, 'y': y, 'width': width, 'height': height};
   }
 }
 

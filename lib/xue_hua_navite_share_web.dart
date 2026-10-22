@@ -38,9 +38,7 @@ class XueHuaNaviteShareWeb extends XueHuaNaviteSharePlatform {
       try {
         final probeBytes = Uint8List.fromList(<int>[116, 101, 115, 116]);
         final probeFile = _createWebFile(probeBytes, 'probe.txt', 'text/plain');
-        final shareData = _buildJsShareData(
-          files: <web.File>[probeFile],
-        );
+        final shareData = _buildJsShareData(files: <web.File>[probeFile]);
         supportsFiles = web.window.navigator.canShare(shareData);
       } catch (_) {
         supportsFiles = false;
@@ -158,8 +156,7 @@ class XueHuaNaviteShareWeb extends XueHuaNaviteSharePlatform {
       return const ShareResult(
         status: ShareResultStatus.fallbackExecuted,
         selectedActivityType: 'browser.download',
-        message:
-            'Web Share API for files was unavailable; triggered browser file download fallback.',
+        message: 'Web Share API for files was unavailable; triggered browser file download fallback.',
       );
     }
 
@@ -169,8 +166,7 @@ class XueHuaNaviteShareWeb extends XueHuaNaviteSharePlatform {
 
     return const ShareResult(
       status: ShareResultStatus.unavailable,
-      message:
-          'Web Share API is unavailable in this browser context (requires HTTPS or localhost).',
+      message: 'Web Share API is unavailable in this browser context (requires HTTPS or localhost).',
     );
   }
 
