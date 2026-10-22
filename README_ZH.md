@@ -11,17 +11,17 @@
 
 ## 功能特性对比
 
-| 功能特性 | Android | iOS / iPadOS | macOS | Windows | Linux | Web |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| 分享纯文本与主题 (`shareText`) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 |
-| 分享链接与富媒体预览头 (`shareUri`) | 支持 | 支持 (`LPLinkMetadata`) | 支持 | 支持 | 支持 | 支持 |
-| 分享单文件与多文件 (`shareFiles`) | 支持 (`ContentProvider`) | 支持 | 支持 | 支持 (`CF_HDROP` + 资源管理器) | 支持 (`GtkAppChooserDialog`) | 支持 (`File` API) |
-| 分享内存二进制数据 (`shareMemoryFiles`) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 (`Blob` / `File`) |
-| 弹出框锚点定位 (`ShareAnchorRect`) | 无需 | 支持 (`UIPopoverPresentationController`) | 支持 (`NSSharingServicePicker`) | 无需 | 无需 | 无需 |
-| 排除特定分享活动/应用 | 支持 (API 24+ `EXTRA_EXCLUDE_COMPONENTS`) | 支持 (`excludedActivityTypes`) | 支持 (`NSSharingServicePickerDelegate`) | 无需 | 无需 | 无需 |
-| 定向直达系统服务 (`ShareTargetService`) | 邮件、短信、剪贴板、指定包名 | 邮件、剪贴板 | 隔空投送 (AirDrop)、邮件、信息、阅读列表、Finder、剪贴板 | 邮件、资源管理器定位、剪贴板 | 邮件、文件管理器定位、剪贴板 | 邮件、剪贴板、文件下载降级 |
-| 分享结果状态与目标应用回调 (`ShareResult`) | 支持 (`IntentSender` + `ActivityResult`) | 支持 (`completionWithItemsHandler`) | 支持 (`NSSharingServiceDelegate`) | 支持 | 支持 | 支持 (`AbortError` 识别) |
-| 运行时平台能力检测 (`getCapabilities`) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 |
+| 功能特性                                   |                  Android                  |               iOS / iPadOS               |                          macOS                           |            Windows             |            Linux             |            Web             |
+|:-------------------------------------------|:-----------------------------------------:|:----------------------------------------:|:--------------------------------------------------------:|:------------------------------:|:----------------------------:|:--------------------------:|
+| 分享纯文本与主题 (`shareText`)             |                   支持                    |                   支持                   |                           支持                           |              支持              |             支持             |            支持            |
+| 分享链接与富媒体预览头 (`shareUri`)        |                   支持                    |         支持 (`LPLinkMetadata`)          |                           支持                           |              支持              |             支持             |            支持            |
+| 分享单文件与多文件 (`shareFiles`)          |         支持 (`ContentProvider`)          |                   支持                   |                           支持                           | 支持 (`CF_HDROP` + 资源管理器) | 支持 (`GtkAppChooserDialog`) |     支持 (`File` API)      |
+| 分享内存二进制数据 (`shareMemoryFiles`)    |                   支持                    |                   支持                   |                           支持                           |              支持              |             支持             |   支持 (`Blob` / `File`)   |
+| 弹出框锚点定位 (`ShareAnchorRect`)         |                   无需                    | 支持 (`UIPopoverPresentationController`) |             支持 (`NSSharingServicePicker`)              |              无需              |             无需             |            无需            |
+| 排除特定分享活动/应用                      | 支持 (API 24+ `EXTRA_EXCLUDE_COMPONENTS`) |      支持 (`excludedActivityTypes`)      |         支持 (`NSSharingServicePickerDelegate`)          |              无需              |             无需             |            无需            |
+| 定向直达系统服务 (`ShareTargetService`)    |       邮件、短信、剪贴板、指定包名        |               邮件、剪贴板               | 隔空投送 (AirDrop)、邮件、信息、阅读列表、Finder、剪贴板 |  邮件、资源管理器定位、剪贴板  | 邮件、文件管理器定位、剪贴板 | 邮件、剪贴板、文件下载降级 |
+| 分享结果状态与目标应用回调 (`ShareResult`) | 支持 (`IntentSender` + `ActivityResult`)  |   支持 (`completionWithItemsHandler`)    |            支持 (`NSSharingServiceDelegate`)             |              支持              |             支持             |  支持 (`AbortError` 识别)  |
+| 运行时平台能力检测 (`getCapabilities`)     |                   支持                    |                   支持                   |                           支持                           |              支持              |             支持             |            支持            |
 
 ## 集成安装
 

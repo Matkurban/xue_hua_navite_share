@@ -11,17 +11,17 @@ A production-ready, cross-platform native share Flutter plugin supporting **Andr
 
 ## Features
 
-| Capability | Android | iOS / iPadOS | macOS | Windows | Linux | Web |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| Share Plain / Formatted Text (`shareText`) | Yes | Yes | Yes | Yes | Yes | Yes |
-| Share URI / URL + Rich Preview (`shareUri`) | Yes | Yes (`LPLinkMetadata`) | Yes | Yes | Yes | Yes |
-| Share Single & Multiple Local Files (`shareFiles`) | Yes (`ContentProvider`) | Yes | Yes | Yes (`CF_HDROP` + Explorer) | Yes (`GtkAppChooserDialog`) | Yes (`File` API) |
-| Share In-Memory Bytes (`shareMemoryFiles`) | Yes | Yes | Yes | Yes | Yes | Yes (`Blob` / `File`) |
-| Popover Anchor Positioning (`ShareAnchorRect`) | N/A | Yes (`UIPopoverPresentationController`) | Yes (`NSSharingServicePicker`) | N/A | N/A | N/A |
-| Activity / Service Exclusions | Yes (API 24+ `EXTRA_EXCLUDE_COMPONENTS`) | Yes (`excludedActivityTypes`) | Yes (`NSSharingServicePickerDelegate`) | N/A | N/A | N/A |
-| Direct Targeted Service (`ShareTargetService`) | Mail, SMS, Clipboard, Custom Package | Mail, Clipboard | AirDrop, Mail, Messages, Reading List, Finder, Clipboard | Mail, Explorer, Clipboard | Mail, File Manager, Clipboard | Mail, Clipboard, Download |
-| Completion Status & Chosen Target Callback | Yes (`IntentSender` + `ActivityResult`) | Yes (`completionWithItemsHandler`) | Yes (`NSSharingServiceDelegate`) | Yes | Yes | Yes (`AbortError` detection) |
-| Runtime Capability Inspection (`getCapabilities`) | Yes | Yes | Yes | Yes | Yes | Yes |
+| Capability                                         |                 Android                  |              iOS / iPadOS               |                          macOS                           |           Windows           |             Linux             |             Web              |
+|:---------------------------------------------------|:----------------------------------------:|:---------------------------------------:|:--------------------------------------------------------:|:---------------------------:|:-----------------------------:|:----------------------------:|
+| Share Plain / Formatted Text (`shareText`)         |                   Yes                    |                   Yes                   |                           Yes                            |             Yes             |              Yes              |             Yes              |
+| Share URI / URL + Rich Preview (`shareUri`)        |                   Yes                    |         Yes (`LPLinkMetadata`)          |                           Yes                            |             Yes             |              Yes              |             Yes              |
+| Share Single & Multiple Local Files (`shareFiles`) |         Yes (`ContentProvider`)          |                   Yes                   |                           Yes                            | Yes (`CF_HDROP` + Explorer) |  Yes (`GtkAppChooserDialog`)  |       Yes (`File` API)       |
+| Share In-Memory Bytes (`shareMemoryFiles`)         |                   Yes                    |                   Yes                   |                           Yes                            |             Yes             |              Yes              |    Yes (`Blob` / `File`)     |
+| Popover Anchor Positioning (`ShareAnchorRect`)     |                   N/A                    | Yes (`UIPopoverPresentationController`) |              Yes (`NSSharingServicePicker`)              |             N/A             |              N/A              |             N/A              |
+| Activity / Service Exclusions                      | Yes (API 24+ `EXTRA_EXCLUDE_COMPONENTS`) |      Yes (`excludedActivityTypes`)      |          Yes (`NSSharingServicePickerDelegate`)          |             N/A             |              N/A              |             N/A              |
+| Direct Targeted Service (`ShareTargetService`)     |   Mail, SMS, Clipboard, Custom Package   |             Mail, Clipboard             | AirDrop, Mail, Messages, Reading List, Finder, Clipboard |  Mail, Explorer, Clipboard  | Mail, File Manager, Clipboard |  Mail, Clipboard, Download   |
+| Completion Status & Chosen Target Callback         | Yes (`IntentSender` + `ActivityResult`)  |   Yes (`completionWithItemsHandler`)    |             Yes (`NSSharingServiceDelegate`)             |             Yes             |              Yes              | Yes (`AbortError` detection) |
+| Runtime Capability Inspection (`getCapabilities`)  |                   Yes                    |                   Yes                   |                           Yes                            |             Yes             |              Yes              |             Yes              |
 
 ## Installation
 
