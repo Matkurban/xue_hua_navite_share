@@ -1,10 +1,12 @@
 # xue_hua_navite_share
 
-**Language / 语言**: [English](README.md) | [简体中文](README_ZH.md)
+**Language / 语言**: [English](README.md) | [简体中文](README_ZH.md)  
+**Architecture & Implementation Plan**: [Implementation Plan (English)](IMPLEMENTATION_PLAN.md)
 
-A production-ready, cross-platform native share Flutter plugin supporting **Android**, **iOS**, **macOS**, **Windows**, **Linux**, and **Web**.
+A production-ready, cross-platform native share Flutter plugin supporting **Android**, **iOS / iPadOS**, **macOS**, **Windows**, **Linux**, and **Web**.
 
 - **Author**: Matkurban (`3496354336@qq.com`)
+- **Version**: `1.0.0`
 - **Repository**: [https://github.com/Matkurban/xue_hua_navite_share](https://github.com/Matkurban/xue_hua_navite_share)
 
 ## Features
@@ -23,13 +25,17 @@ A production-ready, cross-platform native share Flutter plugin supporting **Andr
 
 ## Installation
 
-Add `xue_hua_navite_share` to your `pubspec.yaml`:
+Add `xue_hua_navite_share` from [pub.dev](https://pub.dev/packages/xue_hua_navite_share) to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  xue_hua_navite_share:
-    git:
-      url: https://github.com/Matkurban/xue_hua_navite_share.git
+  xue_hua_navite_share: ^1.0.0
+```
+
+Or install via the Flutter CLI:
+
+```bash
+flutter pub add xue_hua_navite_share
 ```
 
 ### AI Coding Agent Skills (`package:skills`)
@@ -41,6 +47,8 @@ dart run skills@ get
 ```
 
 ## Platform Integration & Notes
+
+For full architectural details and native implementation design across all 6 platforms, see the [Implementation Plan](IMPLEMENTATION_PLAN.md).
 
 ### 1. Android
 - **Zero Manual `FileProvider` Setup**: The plugin automatically registers its own self-contained `XueHuaShareFileProvider` (`${applicationId}.xue_hua_navite_share.fileprovider`) in its `AndroidManifest.xml` and grants temporary `FLAG_GRANT_READ_URI_PERMISSION` to resolved target apps.
@@ -163,4 +171,4 @@ if (await XueHuaNaviteShare.instance.canShare(params)) {
 
 ## License
 
-MIT License. Copyright (c) 2026 Matkurban (`3496354336@qq.com`).
+See the [LICENSE](LICENSE) file for details.

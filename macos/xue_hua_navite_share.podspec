@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'xue_hua_navite_share'
-  s.version          = '0.1.0'
+  s.version          = '1.0.0'
   s.summary          = 'Cross-platform native share plugin for Flutter.'
   s.description      = <<-DESC
 A comprehensive cross-platform native share Flutter plugin supporting Android, iOS, macOS, Windows, Linux, and Web.

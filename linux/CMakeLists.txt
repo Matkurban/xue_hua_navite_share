@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Project-level configuration.
 set(PROJECT_NAME "xue_hua_navite_share")
-project(${PROJECT_NAME} LANGUAGES CXX)
+project(${PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 
 # This value is used when generating builds using this plugin, so it must
 # not be changed.

@@ -1,4 +1,4 @@
-## 0.1.0
+## 1.0.0
 
 * Initial official release of `xue_hua_navite_share` by Matkurban (`3496354336@qq.com`).
 * Full 6-platform native sharing support across Android, iOS, macOS, Windows, Linux, and Web:
