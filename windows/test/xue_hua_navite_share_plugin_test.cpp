@@ -22,21 +22,20 @@ using flutter::MethodResultFunctions;
 
 }  // namespace
 
-TEST(XueHuaNaviteSharePlugin, GetPlatformVersion) {
+TEST(XueHuaNaviteSharePlugin, GetCapabilities) {
   XueHuaNaviteSharePlugin plugin;
-  // Save the reply value from the success callback.
-  std::string result_string;
+  EncodableMap capabilities_map;
   plugin.HandleMethodCall(
-      MethodCall("getPlatformVersion", std::make_unique<EncodableValue>()),
+      MethodCall("getCapabilities", std::make_unique<EncodableValue>()),
       std::make_unique<MethodResultFunctions<>>(
-          [&result_string](const EncodableValue* result) {
-            result_string = std::get<std::string>(*result);
+          [&capabilities_map](const EncodableValue* result) {
+            capabilities_map = std::get<EncodableMap>(*result);
           },
           nullptr, nullptr));
 
-  // Since the exact string varies by host, just ensure that it's a string
-  // with the expected format.
-  EXPECT_TRUE(result_string.rfind("Windows ", 0) == 0);
+  auto it = capabilities_map.find(EncodableValue("platform"));
+  ASSERT_NE(it, capabilities_map.end());
+  EXPECT_EQ(std::get<std::string>(it->second), "windows");
 }
 
 }  // namespace test
