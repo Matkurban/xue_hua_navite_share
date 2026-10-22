@@ -4,6 +4,12 @@ version: 1.0.0
 homepage: https://github.com/Matkurban/xue_hua_navite_share
 repository: https://github.com/Matkurban/xue_hua_navite_share
 issue_tracker: https://github.com/Matkurban/xue_hua_navite_share/issues
+topics:
+  - share
+  - sharing
+  - airdrop
+  - cross-platform
+  - native-share
 
 environment:
   sdk: ^3.8.0
@@ -21,13 +27,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-
-topics:
-  - share
-  - sharing
-  - airdrop
-  - cross-platform
-  - native-share
 
 flutter:
   plugin:
