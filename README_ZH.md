@@ -1,10 +1,12 @@
 # xue_hua_navite_share
 
-**语言 / Language**: [简体中文](README_ZH.md) | [English](README.md)
+**语言 / Language**: [简体中文](README_ZH.md) | [English](README.md)  
+**架构与实现计划**: [六端完整实现计划书 (简体中文)](IMPLEMENTATION_PLAN_ZH.md)
 
 一款面向生产环境的 Flutter 全平台原生分享插件，完整支持 **Android**、**iOS / iPadOS**、**macOS**、**Windows**、**Linux** 与 **Web** 六大平台。
 
 - **作者**: Matkurban (`3496354336@qq.com`)
+- **版本**: `1.0.0`
 - **仓库地址**: [https://github.com/Matkurban/xue_hua_navite_share](https://github.com/Matkurban/xue_hua_navite_share)
 
 ## 功能特性对比
@@ -23,13 +25,17 @@
 
 ## 集成安装
 
-在项目的 `pubspec.yaml` 中添加依赖：
+通过 [pub.dev](https://pub.dev/packages/xue_hua_navite_share) 在项目的 `pubspec.yaml` 中添加依赖：
 
 ```yaml
 dependencies:
-  xue_hua_navite_share:
-    git:
-      url: https://github.com/Matkurban/xue_hua_navite_share.git
+  xue_hua_navite_share: ^1.0.0
+```
+
+或者直接在终端执行以下命令安装：
+
+```bash
+flutter pub add xue_hua_navite_share
 ```
 
 ### AI 编程助手 Skills 支持 (`package:skills`)
@@ -41,6 +47,8 @@ dart run skills@ get
 ```
 
 ## 各平台差异与集成注意事项
+
+关于六大平台的详细架构设计与底层原生实现方案，请参阅 [六端完整实现计划书 (IMPLEMENTATION_PLAN_ZH.md)](IMPLEMENTATION_PLAN_ZH.md)。
 
 ### 1. Android 端注意事项
 - **免手动配置 `FileProvider`**：插件内部自带零外部依赖的 `XueHuaShareFileProvider`（Authority 为 `${applicationId}.xue_hua_navite_share.fileprovider`），构建时会自动合并至宿主应用的 `AndroidManifest.xml`，并自动向目标分享应用授予 `FLAG_GRANT_READ_URI_PERMISSION` 临时读取权限。
@@ -163,4 +171,4 @@ if (await XueHuaNaviteShare.instance.canShare(params)) {
 
 ## 开源协议
 
-MIT License. Copyright (c) 2026 Matkurban (`3496354336@qq.com`).
+详见 [LICENSE](LICENSE) 文件。
