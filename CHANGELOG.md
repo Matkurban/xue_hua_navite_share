@@ -1,4 +1,4 @@
-﻿## 1.0.1
+## 1.0.1
 
 * Windows: bump googletest to v1.15.2 so builds work with CMake 4.x (Visual Studio).
 * Add Windows share smoke integration test (windows_share_smoke_test.dart).
