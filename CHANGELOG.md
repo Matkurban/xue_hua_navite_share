@@ -1,3 +1,8 @@
+## 1.0.2
+
+* Linux: bump googletest to v1.15.2 so builds work with CMake 4.x.
+* Add Linux share smoke integration test (linux_share_smoke_test.dart).
+
 ## 1.0.1
 
 * Windows: bump googletest to v1.15.2 so builds work with CMake 4.x (Visual Studio).
