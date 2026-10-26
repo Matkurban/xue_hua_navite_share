@@ -8,7 +8,9 @@ import 'package:xue_hua_navite_share_example/main.dart' as app;
 /// Driver entrypoint for the example app.
 ///
 /// Exposes a [DataHandler] so [FlutterDriver.requestData] can exercise native
-/// share APIs without opening the blocking GTK AppChooser dialog.
+/// share APIs without opening blocking system share pickers (e.g. GTK
+/// AppChooser on Linux). Clipboard / fileExplorer / systemSheet-fallback
+/// paths are used instead.
 Future<void> main() async {
   enableFlutterDriverExtension(
     handler: (String? message) async {
@@ -46,8 +48,16 @@ Future<void> main() async {
             ),
           );
           return jsonEncode(result.toMap());
+        case 'system_sheet_text':
+          // Exercises default systemSheet path (clipboard fallback on Windows).
+          final result = await plugin.shareText(
+            'flutter_driver systemSheet text smoke',
+            subject: 'Driver sheet',
+            title: 'Sheet share',
+            fallbackToClipboard: true,
+          );
+          return jsonEncode(result.toMap());
         case 'file_explorer':
-          // Creates a temp file then reveals via GIO / FileManager1 (non-modal).
           final result = await plugin.shareToService(
             ShareTargetService.fileExplorer,
             ShareParams(
