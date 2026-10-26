@@ -55,3 +55,35 @@ flutter drive --driver=test_driver/app_test.dart --target=test_driver/app.dart -
 Windows native Share UI is stubbed in-plugin and falls back to Clipboard /
 Explorer, so Share Text and DataHandler clipboard/memory/fileExplorer paths
 are safe to automate. Prefer non-blocking `shareToService` targets in CI.
+
+## macOS automated tests
+
+```bash
+# Unit + widget
+flutter test
+cd example && flutter test
+
+# Native integration (run one file per process)
+flutter test integration_test/plugin_integration_test.dart -d macos
+flutter test integration_test/macos_share_smoke_test.dart -d macos
+flutter test integration_test/example_ui_macos_test.dart -d macos
+
+# flutter_driver UI + DataHandler coverage
+flutter drive --driver=test_driver/app_test.dart --target=test_driver/app.dart -d macos
+```
+
+`NSSharingServicePicker` (systemSheet) is modal and blocks automation until
+dismissed. Automated suites cover clipboard, `fileExplorer`, capabilities,
+`canShare`, and cleanup instead. Share Text / Share Memory / Share URI via the
+system picker are intentionally skipped in UI automation.
+
+## iOS automated tests
+
+```bash
+# Prefer a simulator for non-interactive runs
+flutter test integration_test/plugin_integration_test.dart -d "iPhone 18 Pro"
+flutter test integration_test/ios_share_smoke_test.dart -d "iPhone 18 Pro"
+```
+
+`UIActivityViewController` (systemSheet) is modal; smoke tests use clipboard /
+memory clipboard / cleanup only.

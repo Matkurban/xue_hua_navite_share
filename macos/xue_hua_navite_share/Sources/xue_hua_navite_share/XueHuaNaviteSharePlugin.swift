@@ -67,10 +67,18 @@ public class XueHuaNaviteSharePlugin: NSObject,
   }
 
   private func handleGetCapabilities(result: @escaping FlutterResult) {
-    let probeItems: [Any] = ["https://flutter.dev"]
-    let services = NSSharingService.sharingServices(forItems: probeItems)
-    var serviceNames = services.map { Self.identifier(for: $0) }
-    serviceNames.append(contentsOf: ["systemClipboard", "fileExplorer"])
+    // Return Dart wire-format identifiers (ShareTargetService.wireName), matching
+    // iOS/Windows/Linux. Raw NSSharingService.Name values are not discoverable
+    // by the cross-platform API.
+    let availableServices = [
+      "systemSheet",
+      "airDrop",
+      "messages",
+      "mail",
+      "readingList",
+      "systemClipboard",
+      "fileExplorer",
+    ]
 
     result([
       "platform": "macos",
@@ -82,7 +90,7 @@ public class XueHuaNaviteSharePlugin: NSObject,
       "supportsAnchorPopover": true,
       "supportsExcludedActivities": true,
       "supportsChosenTargetCallback": true,
-      "availableServices": Array(Set(serviceNames)).sorted(),
+      "availableServices": availableServices,
     ])
   }
 
