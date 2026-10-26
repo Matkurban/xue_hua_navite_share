@@ -1,3 +1,9 @@
+## 1.0.3
+
+* Linux: add flutter_driver example suite and example UI integration coverage.
+* Example: ValueKeys, Cleanup Temp Files action, fix BuildContext async lint.
+* Linux CMake: set DOWNLOAD_EXTRACT_TIMESTAMP for googletest FetchContent.
+
 ## 1.0.2
 
 * Linux: bump googletest to v1.15.2 so builds work with CMake 4.x.
