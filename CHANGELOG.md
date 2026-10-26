@@ -1,3 +1,9 @@
+## 1.0.5
+
+* macOS: `getCapabilities` returns ShareTargetService wire names (`mail`, `airDrop`, …) instead of raw NSSharingService identifiers.
+* iOS: clipboard target copies text, URLs, files, and memory items (was text-only).
+* macOS/iOS: flutter_driver + smoke/UI integration coverage; skip modal systemSheet paths in automation.
+
 ## 1.0.4
 
 * Windows: fix OpenClipboard UI-thread deadlock; systemSheet text uses clipboard fallback (mailto only for mail target).
