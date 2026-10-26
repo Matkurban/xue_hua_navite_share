@@ -35,3 +35,23 @@ flutter drive --driver=test_driver/app_test.dart --target=test_driver/app.dart -
 Share Memory / Share Local Files via the system sheet open a blocking GTK
 `AppChooserDialog` on Linux; automated suites intentionally cover clipboard,
 `fileExplorer`, capabilities, `canShare`, and cleanup instead.
+
+## Windows automated tests
+
+```bash
+# Unit + widget
+flutter test
+cd example && flutter test
+
+# Native integration (run one file per process)
+flutter test integration_test/plugin_integration_test.dart -d windows
+flutter test integration_test/windows_share_smoke_test.dart -d windows
+flutter test integration_test/example_ui_windows_test.dart -d windows
+
+# flutter_driver UI + DataHandler coverage
+flutter drive --driver=test_driver/app_test.dart --target=test_driver/app.dart -d windows
+```
+
+Windows native Share UI is stubbed in-plugin and falls back to Clipboard /
+Explorer, so Share Text and DataHandler clipboard/memory/fileExplorer paths
+are safe to automate. Prefer non-blocking `shareToService` targets in CI.

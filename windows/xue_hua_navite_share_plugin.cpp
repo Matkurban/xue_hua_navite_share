@@ -135,7 +135,9 @@ std::wstring WriteMemoryTempFile(const std::vector<uint8_t>& bytes,
 /// Copies UTF-8 text or file drop list (`CF_HDROP`) to the Windows Clipboard.
 bool CopyToWindowsClipboard(HWND hwnd, const std::string& text,
                             const std::vector<std::wstring>& files) {
-  if (!OpenClipboard(hwnd)) {
+  // Use NULL owner to avoid UI-thread deadlocks when invoked from the
+  // Flutter platform channel handler while the window thread is blocked.
+  if (!OpenClipboard(nullptr)) {
     return false;
   }
   EmptyClipboard();
@@ -455,10 +457,14 @@ void XueHuaNaviteSharePlugin::HandleShare(
     return;
   }
 
-  // 3. Direct Mail (`mailto:`) or System Sheet for text/URLs
-  if (target_service == "mail" ||
-      (target_service == "systemSheet" && file_paths.empty() &&
-       !TryShowWindowsSystemShareUI(hwnd))) {
+  // 3. Attempt WinRT system Share UI for systemSheet (currently a stub).
+  if (target_service == "systemSheet") {
+    TryShowWindowsSystemShareUI(hwnd);
+    // Fall through to clipboard / file staging when Share UI is unavailable.
+  }
+
+  // 4. Direct Mail (`mailto:`) only when the caller asked for mail.
+  if (target_service == "mail") {
     std::string mailto = "mailto:?subject=" + UriEncode(subject) +
                          "&body=" + UriEncode(combined_text);
     std::wstring wide_mailto = Utf8ToWide(mailto);
@@ -469,16 +475,14 @@ void XueHuaNaviteSharePlugin::HandleShare(
       CopyToWindowsClipboard(hwnd, combined_text, file_paths);
       EncodableMap res;
       res[EncodableValue("status")] = EncodableValue("success");
-      res[EncodableValue("selectedActivityType")] =
-          EncodableValue(target_service == "mail" ? "mailto" : "windows.share");
+      res[EncodableValue("selectedActivityType")] = EncodableValue("mailto");
       res[EncodableValue("message")] = EncodableValue(
-          "Shared via Windows system mail/share handler and clipboard.");
+          "Shared via Windows mailto handler and clipboard.");
       result->Success(EncodableValue(res));
       return;
     }
   }
-
-  // 4. File sharing via Windows Explorer selection + CF_HDROP Clipboard
+  // 5. File sharing via Windows Explorer selection + CF_HDROP Clipboard
   if (!file_paths.empty()) {
     CopyToWindowsClipboard(hwnd, combined_text, file_paths);
     RevealFilesInExplorer(file_paths);
@@ -492,7 +496,7 @@ void XueHuaNaviteSharePlugin::HandleShare(
     return;
   }
 
-  // 5. Fallback to Windows Clipboard
+  // 6. Fallback to Windows Clipboard
   bool fallback_clipboard = GetBoolArg(args, "fallbackToClipboard", true);
   if (fallback_clipboard &&
       CopyToWindowsClipboard(hwnd, combined_text, file_paths)) {

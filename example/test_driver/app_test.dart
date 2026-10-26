@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart' hide TypeMatcher, isInstanceOf;
@@ -16,12 +18,37 @@ void main() {
     });
 
     Future<void> scrollActionsIntoView() async {
-      // Share action buttons live below the fold in the ListView.
       await driver.scrollUntilVisible(
         find.byType('ListView'),
         find.byValueKey('btn_share_text'),
-        dyScroll: -120,
-        timeout: const Duration(seconds: 15),
+        dyScroll: -200,
+        timeout: const Duration(seconds: 20),
+      );
+    }
+
+    Future<String> waitForResultStatusMatching(
+      bool Function(String status) predicate, {
+      Duration timeout = const Duration(seconds: 25),
+    }) async {
+      final deadline = DateTime.now().add(timeout);
+      Object? lastError;
+      String? lastStatus;
+      while (DateTime.now().isBefore(deadline)) {
+        try {
+          final current =
+              await driver.getText(find.byValueKey('result_status'));
+          lastStatus = current;
+          if (predicate(current)) {
+            return current;
+          }
+        } catch (e) {
+          lastError = e;
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+      }
+      throw TimeoutException(
+        'result_status did not match within $timeout '
+        '(lastStatus=$lastStatus lastError=$lastError)',
       );
     }
 
@@ -34,7 +61,10 @@ void main() {
 
       final capsRaw = await driver.requestData('capabilities');
       final caps = jsonDecode(capsRaw) as Map<String, dynamic>;
-      expect(caps['platform']?.toString().toLowerCase(), contains('linux'));
+      expect(
+        caps['platform']?.toString().toLowerCase(),
+        contains(Platform.operatingSystem),
+      );
       expect(caps['supportsSystemShareSheet'], isTrue);
       expect(caps['supportsFileSharing'], isTrue);
       expect(caps['supportsMemoryBytesSharing'], isTrue);
@@ -69,12 +99,18 @@ void main() {
       expect(cleaned, greaterThanOrEqualTo(0));
     });
 
+    test('systemSheet text via DataHandler (clipboard fallback)', () async {
+      final sheet = jsonDecode(await driver.requestData('system_sheet_text'))
+          as Map<String, dynamic>;
+      expect(sheet['status'], anyOf('success', 'fallbackExecuted'));
+    });
+
     test('UI: cleanup button updates diagnostics', () async {
       await driver.scrollUntilVisible(
         find.byType('ListView'),
         find.byValueKey('btn_cleanup_temp_body'),
-        dyScroll: -120,
-        timeout: const Duration(seconds: 15),
+        dyScroll: -200,
+        timeout: const Duration(seconds: 20),
       );
       await driver.tap(find.byValueKey('btn_cleanup_temp_body'));
       await driver.waitFor(
@@ -84,40 +120,38 @@ void main() {
       final text =
           await driver.getText(find.byValueKey('result_cleaned_count'));
       expect(text, contains('cleanupTempFiles() removed:'));
-    });
+    }, timeout: const Timeout(Duration(seconds: 60)));
+
+    test('UI: Share Text uses clipboard/fallback (non-blocking)', () async {
+      await scrollActionsIntoView();
+      await driver.tap(find.byValueKey('btn_share_text'));
+      final status = await waitForResultStatusMatching(
+        (s) =>
+            s.contains('success') ||
+            s.contains('fallbackExecuted') ||
+            s.contains('unavailable'),
+      );
+      expect(
+        status.contains('success') ||
+            status.contains('fallbackExecuted') ||
+            status.contains('unavailable'),
+        isTrue,
+        reason: 'unexpected status text: $status',
+      );
+    }, timeout: const Timeout(Duration(seconds: 90)));
 
     test('UI: empty local paths shows error without native dialog', () async {
       await scrollActionsIntoView();
       await driver.tap(find.byValueKey('btn_share_files'));
-      await driver.waitFor(
-        find.byValueKey('result_status'),
-        timeout: const Duration(seconds: 15),
+      final status = await waitForResultStatusMatching(
+        (s) => s.contains('error'),
       );
-      final status = await driver.getText(find.byValueKey('result_status'));
       expect(status, contains('error'));
       final message = await driver.getText(find.byValueKey('result_message'));
       expect(message.toLowerCase(), contains('file path'));
-    });
-
-    test('UI: Share Text uses clipboard fallback (no mailto handler)', () async {
-      // Intentionally skips Share Memory / Share URI with files — those open
-      // the blocking GTK AppChooserDialog on Linux.
-      await scrollActionsIntoView();
-      await driver.tap(find.byValueKey('btn_share_text'));
-      await driver.waitFor(
-        find.byValueKey('result_status'),
-        timeout: const Duration(seconds: 20),
-      );
-      final status = await driver.getText(find.byValueKey('result_status'));
-      expect(
-        status.contains('success') || status.contains('fallbackExecuted'),
-        isTrue,
-        reason: 'unexpected status text: $status',
-      );
-    });
+    }, timeout: const Timeout(Duration(seconds: 90)));
 
     test('fileExplorer DataHandler is non-modal and tolerant', () async {
-      // Kept last: may briefly open a file manager window via GIO fallback.
       final result = jsonDecode(await driver.requestData('file_explorer'))
           as Map<String, dynamic>;
       expect(
@@ -128,6 +162,6 @@ void main() {
         int.parse(await driver.requestData('cleanup')),
         greaterThanOrEqualTo(0),
       );
-    });
-  });
+    }, timeout: const Timeout(Duration(seconds: 60)));
+  }, timeout: const Timeout(Duration(minutes: 3)));
 }

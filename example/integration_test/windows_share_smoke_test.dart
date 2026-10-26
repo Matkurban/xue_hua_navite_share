@@ -1,4 +1,5 @@
-﻿import 'dart:io';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -7,7 +8,7 @@ import 'package:xue_hua_navite_share/xue_hua_navite_share.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Windows share API smoke: capabilities, clipboard, files', (
+  testWidgets('Windows share API smoke: capabilities, clipboard, memory, files', (
     WidgetTester tester,
   ) async {
     final plugin = XueHuaNaviteShare.instance;
@@ -41,6 +42,23 @@ void main() {
       anyOf(ShareResultStatus.success, ShareResultStatus.fallbackExecuted),
     );
 
+    final memoryResult = await plugin.shareToService(
+      ShareTargetService.systemClipboard,
+      ShareParams(
+        items: <ShareItem>[
+          ShareItem.memory(
+            bytes: Uint8List.fromList(<int>[1, 2, 3, 4, 5]),
+            fileName: 'windows_smoke_mem.bin',
+          ),
+        ],
+        title: 'Memory clipboard smoke',
+      ),
+    );
+    expect(
+      memoryResult.status,
+      anyOf(ShareResultStatus.success, ShareResultStatus.fallbackExecuted),
+    );
+
     final tempFile = File(
       '${Directory.systemTemp.path}${Platform.pathSeparator}xue_hua_share_smoke.txt',
     );
@@ -58,6 +76,36 @@ void main() {
         ShareResultStatus.fallbackExecuted,
         ShareResultStatus.dismissed,
       ),
+    );
+
+    final explorerResult = await plugin.shareToService(
+      ShareTargetService.fileExplorer,
+      ShareParams(
+        items: <ShareItem>[
+          ShareItem.file(tempFile.path, mimeType: 'text/plain'),
+        ],
+        title: 'Explorer reveal smoke',
+      ),
+    );
+    expect(
+      explorerResult.status,
+      anyOf(
+        ShareResultStatus.success,
+        ShareResultStatus.unavailable,
+        ShareResultStatus.fallbackExecuted,
+      ),
+    );
+
+    // systemSheet text should fallback to clipboard (not open mailto).
+    final sheetResult = await plugin.shareText(
+      'Windows systemSheet text should use clipboard fallback',
+      subject: 'Sheet smoke',
+      title: 'Sheet smoke',
+      fallbackToClipboard: true,
+    );
+    expect(
+      sheetResult.status,
+      anyOf(ShareResultStatus.success, ShareResultStatus.fallbackExecuted),
     );
 
     final cleaned = await plugin.cleanupTempFiles();
