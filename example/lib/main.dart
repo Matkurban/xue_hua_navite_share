@@ -129,6 +129,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   Future<void> _handleShareUri(BuildContext buttonContext) async {
     final uri = Uri.tryParse(_urlController.text.trim());
     if (uri == null) return;
+    final anchorRect = _resolveAnchorRect(buttonContext);
 
     Uint8List previewUint8List = await _buildSamplePngBytes();
 
@@ -138,7 +139,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
       subject: _subjectController.text,
       message: _textController.text,
       previewThumbnail: previewUint8List,
-      anchorRect: _resolveAnchorRect(buttonContext),
+      anchorRect: anchorRect,
       preferredEdge: _preferredEdge,
       excludedActivityTypes: _selectedExclusions,
       fallbackToClipboard: _fallbackToClipboard,
@@ -147,6 +148,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   }
 
   Future<void> _handleShareMemoryItems(BuildContext buttonContext) async {
+    final anchorRect = _resolveAnchorRect(buttonContext);
     final jsonContent = const JsonEncoder.withIndent('  ')
         .convert(<String, Object?>{
           'plugin': 'xue_hua_navite_share',
@@ -178,7 +180,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
       text: _textController.text,
       subject: _subjectController.text,
       title: _titleController.text,
-      anchorRect: _resolveAnchorRect(buttonContext),
+      anchorRect: anchorRect,
       preferredEdge: _preferredEdge,
       excludedActivityTypes: _selectedExclusions,
     );
@@ -216,6 +218,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   }
 
   Future<void> _handleShareCustomPayload(BuildContext buttonContext) async {
+    final anchorRect = _resolveAnchorRect(buttonContext);
     final uri = Uri.tryParse(_urlController.text.trim());
     final recipients = _recipientController.text
         .split(',')
@@ -238,7 +241,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
       subject: _subjectController.text,
       title: _titleController.text,
       previewThumbnail: previewUint8List,
-      anchorRect: _resolveAnchorRect(buttonContext),
+      anchorRect: anchorRect,
       preferredEdge: _preferredEdge,
       excludedActivityTypes: _selectedExclusions,
       targetService: _targetService,
@@ -280,14 +283,19 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('XueHua Native Share Workbench'),
+        title: const Text(
+          'XueHua Native Share Workbench',
+          key: ValueKey<String>('app_bar_title'),
+        ),
         actions: <Widget>[
           IconButton(
+            key: const ValueKey<String>('btn_refresh_capabilities'),
             tooltip: 'Refresh Platform Capabilities',
             onPressed: _loadCapabilities,
             icon: const Icon(Icons.refresh),
           ),
           IconButton(
+            key: const ValueKey<String>('btn_cleanup_temp'),
             tooltip: 'Cleanup Temporary Share Files',
             onPressed: _handleCleanupTempFiles,
             icon: const Icon(Icons.cleaning_services_outlined),
@@ -331,7 +339,10 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: <Widget>[
-                  Chip(label: Text('Platform: ${caps.platform}')),
+                  Chip(
+                    key: const ValueKey<String>('chip_platform'),
+                    label: Text('Platform: ${caps.platform}'),
+                  ),
                   Chip(
                     label: Text(
                       'System Sheet: ${caps.supportsSystemShareSheet}',
@@ -383,6 +394,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 12),
             TextField(
+              key: const ValueKey<String>('field_title'),
               controller: _titleController,
               decoration: const InputDecoration(
                 labelText: 'Chooser / Preview Title',
@@ -391,6 +403,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 12),
             TextField(
+              key: const ValueKey<String>('field_subject'),
               controller: _subjectController,
               decoration: const InputDecoration(
                 labelText: 'Subject Line (Email / Rich Metadata)',
@@ -399,6 +412,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 12),
             TextField(
+              key: const ValueKey<String>('field_text'),
               controller: _textController,
               maxLines: 2,
               decoration: const InputDecoration(
@@ -408,6 +422,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 12),
             TextField(
+              key: const ValueKey<String>('field_url'),
               controller: _urlController,
               decoration: const InputDecoration(
                 labelText: 'Share URI / URL',
@@ -416,6 +431,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             ),
             const SizedBox(height: 12),
             TextField(
+              key: const ValueKey<String>('field_file_paths'),
               controller: _filePathController,
               decoration: const InputDecoration(
                 labelText: 'Local File Paths (comma-separated)',
@@ -543,6 +559,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
               children: <Widget>[
                 Builder(
                   builder: (btnCtx) => FilledButton.icon(
+                    key: const ValueKey<String>('btn_share_text'),
                     onPressed: () => _handleShareText(btnCtx),
                     icon: const Icon(Icons.text_fields),
                     label: const Text('Share Text'),
@@ -550,6 +567,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                 ),
                 Builder(
                   builder: (btnCtx) => FilledButton.icon(
+                    key: const ValueKey<String>('btn_share_uri'),
                     onPressed: () => _handleShareUri(btnCtx),
                     icon: const Icon(Icons.link),
                     label: const Text('Share URI + Preview'),
@@ -557,6 +575,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                 ),
                 Builder(
                   builder: (btnCtx) => FilledButton.icon(
+                    key: const ValueKey<String>('btn_share_memory'),
                     onPressed: () => _handleShareMemoryItems(btnCtx),
                     icon: const Icon(Icons.memory),
                     label: const Text('Share In-Memory Files (JSON + PNG)'),
@@ -564,6 +583,7 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                 ),
                 Builder(
                   builder: (btnCtx) => OutlinedButton.icon(
+                    key: const ValueKey<String>('btn_share_files'),
                     onPressed: () => _handleShareLocalFiles(btnCtx),
                     icon: const Icon(Icons.folder_open),
                     label: const Text('Share Local File Paths'),
@@ -571,10 +591,17 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
                 ),
                 Builder(
                   builder: (btnCtx) => FilledButton.tonalIcon(
+                    key: const ValueKey<String>('btn_share_custom'),
                     onPressed: () => _handleShareCustomPayload(btnCtx),
                     icon: const Icon(Icons.send),
                     label: Text('Share via ${_targetService.wireName}'),
                   ),
+                ),
+                OutlinedButton.icon(
+                  key: const ValueKey<String>('btn_cleanup_temp_body'),
+                  onPressed: _handleCleanupTempFiles,
+                  icon: const Icon(Icons.cleaning_services_outlined),
+                  label: const Text('Cleanup Temp Files'),
                 ),
               ],
             ),
@@ -604,15 +631,26 @@ class _ShareWorkbenchPageState extends State<ShareWorkbenchPage> {
             else ...<Widget>[
               Text(
                 'Status: ${res.status.wireName} (isSuccess: ${res.isSuccess})',
+                key: const ValueKey<String>('result_status'),
               ),
-              Text('Selected Activity: ${res.selectedActivityType ?? "N/A"}'),
-              Text('Message: ${res.message ?? "N/A"}'),
+              Text(
+                'Selected Activity: ${res.selectedActivityType ?? "N/A"}',
+                key: const ValueKey<String>('result_activity'),
+              ),
+              Text(
+                'Message: ${res.message ?? "N/A"}',
+                key: const ValueKey<String>('result_message'),
+              ),
             ],
             if (_lastCanShare != null)
-              Text('Last canShare() check: $_lastCanShare'),
+              Text(
+                'Last canShare() check: $_lastCanShare',
+                key: const ValueKey<String>('result_can_share'),
+              ),
             if (_lastCleanedCount != null)
               Text(
                 'Last cleanupTempFiles() removed: $_lastCleanedCount file(s)',
+                key: const ValueKey<String>('result_cleaned_count'),
               ),
           ],
         ),
