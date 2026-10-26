@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Windows: fix OpenClipboard UI-thread deadlock; systemSheet text uses clipboard fallback (mailto only for mail target).
+* Windows: flutter_driver + example UI integration coverage; expand smoke tests (memory / fileExplorer / systemSheet).
 ## 1.0.3
 
 * Linux: add flutter_driver example suite and example UI integration coverage.
