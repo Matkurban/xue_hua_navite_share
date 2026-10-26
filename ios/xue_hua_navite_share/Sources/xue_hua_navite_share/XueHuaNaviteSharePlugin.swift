@@ -1,6 +1,7 @@
 import Flutter
 import LinkPresentation
 import UIKit
+import UniformTypeIdentifiers
 
 /// Custom `UIActivityItemSource` that provides rich `LPLinkMetadata` (title, URL,
 /// and preview thumbnail image) and subject metadata to `UIActivityViewController`.
@@ -363,12 +364,72 @@ public class XueHuaNaviteSharePlugin: NSObject, FlutterPlugin {
   }
 
   private func handleClipboardShare(args: [String: Any], result: @escaping FlutterResult) {
-    let text = (args["text"] as? String) ?? (args["uri"] as? String) ?? ""
-    UIPasteboard.general.string = text
+    let pasteboard = UIPasteboard.general
+    var pasteItems: [[String: Any]] = []
+    var strings: [String] = []
+    var urls: [URL] = []
+
+    let rawItems = (args["items"] as? [[String: Any]]) ?? []
+    for raw in rawItems {
+      let type = (raw["type"] as? String) ?? "file"
+      switch type {
+      case "text":
+        if let text = raw["text"] as? String, !text.isEmpty {
+          strings.append(text)
+        }
+      case "url":
+        if let msg = raw["text"] as? String, !msg.isEmpty {
+          strings.append(msg)
+        }
+        if let uriStr = raw["uri"] as? String, let url = URL(string: uriStr) {
+          urls.append(url)
+        }
+      case "memory":
+        if let typedData = raw["bytes"] as? FlutterStandardTypedData {
+          let fileName = (raw["fileName"] as? String) ?? "shared_file.bin"
+          if let fileUrl = writeTempFile(data: typedData.data, fileName: fileName) {
+            urls.append(fileUrl)
+          }
+        }
+      default:
+        if let filePath = raw["filePath"] as? String, !filePath.isEmpty {
+          let fileUrl = URL(fileURLWithPath: filePath)
+          if FileManager.default.fileExists(atPath: fileUrl.path) {
+            urls.append(fileUrl)
+          }
+        }
+      }
+    }
+
+    let topText = (args["text"] as? String) ?? (args["uri"] as? String) ?? ""
+    if !topText.isEmpty, !strings.contains(topText) {
+      strings.insert(topText, at: 0)
+    }
+
+    for text in strings {
+      pasteItems.append([UTType.utf8PlainText.identifier: text])
+    }
+    for url in urls {
+      if url.isFileURL {
+        pasteItems.append([UTType.fileURL.identifier: url])
+      } else {
+        pasteItems.append([UTType.url.identifier: url])
+      }
+    }
+
+    guard !pasteItems.isEmpty else {
+      result([
+        "status": "error",
+        "message": "No valid content to copy to iOS pasteboard.",
+      ])
+      return
+    }
+
+    pasteboard.items = pasteItems
     result([
       "status": "success",
       "selectedActivityType": "com.apple.UIKit.activity.CopyToPasteboard",
-      "message": "Copied content to iOS pasteboard.",
+      "message": "Copied shared items to iOS pasteboard.",
     ])
   }
 

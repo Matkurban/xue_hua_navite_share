@@ -123,6 +123,14 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 60)));
 
     test('UI: Share Text uses clipboard/fallback (non-blocking)', () async {
+      // On macOS/iOS, Share Text opens a modal system picker and blocks until
+      // the user dismisses it. Cover the same capability via DataHandler.
+      if (Platform.isMacOS || Platform.isIOS) {
+        final clip = jsonDecode(await driver.requestData('clipboard_text'))
+            as Map<String, dynamic>;
+        expect(clip['status'], anyOf('success', 'fallbackExecuted'));
+        return;
+      }
       await scrollActionsIntoView();
       await driver.tap(find.byValueKey('btn_share_text'));
       final status = await waitForResultStatusMatching(
