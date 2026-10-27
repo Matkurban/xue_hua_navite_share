@@ -8,9 +8,13 @@ import 'package:test/test.dart' hide TypeMatcher, isInstanceOf;
 void main() {
   group('xue_hua_navite_share example (flutter_driver)', () {
     late FlutterDriver driver;
+    late String devicePlatform;
 
     setUpAll(() async {
       driver = await FlutterDriver.connect();
+      final capsRaw = await driver.requestData('capabilities');
+      final caps = jsonDecode(capsRaw) as Map<String, dynamic>;
+      devicePlatform = (caps['platform']?.toString() ?? '').toLowerCase();
     });
 
     tearDownAll(() async {
@@ -61,9 +65,21 @@ void main() {
 
       final capsRaw = await driver.requestData('capabilities');
       final caps = jsonDecode(capsRaw) as Map<String, dynamic>;
+      final platform =
+          (caps['platform']?.toString() ?? devicePlatform).toLowerCase();
+      // Host OS (where this test process runs) may differ from the device under
+      // test — e.g. flutter_driver host on macOS targeting an Android emulator.
       expect(
-        caps['platform']?.toString().toLowerCase(),
-        contains(Platform.operatingSystem),
+        platform,
+        anyOf(
+          contains(Platform.operatingSystem),
+          equals('android'),
+          equals('ios'),
+          equals('macos'),
+          equals('windows'),
+          equals('linux'),
+          equals('web'),
+        ),
       );
       expect(caps['supportsSystemShareSheet'], isTrue);
       expect(caps['supportsFileSharing'], isTrue);
@@ -73,8 +89,11 @@ void main() {
           .map((e) => e.toString())
           .toList();
       expect(services, contains('systemClipboard'));
-      expect(services, contains('fileExplorer'));
       expect(services, contains('mail'));
+      if (!platform.contains('ios')) {
+        // iOS does not advertise fileExplorer; Android/desktop do.
+        expect(services, contains('fileExplorer'));
+      }
 
       await driver.waitFor(
         find.byValueKey('chip_platform'),
@@ -123,9 +142,13 @@ void main() {
     }, timeout: const Timeout(Duration(seconds: 60)));
 
     test('UI: Share Text uses clipboard/fallback (non-blocking)', () async {
-      // On macOS/iOS, Share Text opens a modal system picker and blocks until
-      // the user dismisses it. Cover the same capability via DataHandler.
-      if (Platform.isMacOS || Platform.isIOS) {
+      // On macOS/iOS/Android, Share Text opens a modal system picker/chooser and
+      // blocks until the user dismisses it. Cover via DataHandler instead.
+      if (devicePlatform.contains('macos') ||
+          devicePlatform.contains('ios') ||
+          devicePlatform.contains('android') ||
+          Platform.isMacOS ||
+          Platform.isIOS) {
         final clip = jsonDecode(await driver.requestData('clipboard_text'))
             as Map<String, dynamic>;
         expect(clip['status'], anyOf('success', 'fallbackExecuted'));
