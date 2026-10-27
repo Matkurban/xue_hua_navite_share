@@ -114,6 +114,7 @@ class XueHuaNaviteSharePlugin :
                     "mail",
                     "messages",
                     "systemClipboard",
+                    "fileExplorer",
                     "custom"
                 )
             )
@@ -184,6 +185,10 @@ class XueHuaNaviteSharePlugin :
         }
         if (targetService == "messages") {
             handleSmsShare(ctx, args, result)
+            return
+        }
+        if (targetService == "fileExplorer") {
+            handleFileExplorerShare(ctx, args, result)
             return
         }
 
@@ -431,9 +436,113 @@ class XueHuaNaviteSharePlugin :
             )
             return
         }
-        val text = (args["text"] as? String) ?: (args["uri"] as? String) ?: ""
+
         val label = (args["title"] as? String) ?: (args["subject"] as? String) ?: "Shared Content"
-        clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+        val textParts = ArrayList<String>()
+        val uris = ArrayList<Uri>()
+
+        val rawItems = (args["items"] as? List<*>) ?: emptyList<Any?>()
+        for (raw in rawItems) {
+            val item = raw as? Map<*, *> ?: continue
+            val type = item["type"] as? String ?: "file"
+            when (type) {
+                "text" -> {
+                    val txt = item["text"] as? String
+                    if (!txt.isNullOrBlank()) {
+                        textParts.add(txt)
+                    }
+                }
+                "url" -> {
+                    val msg = item["text"] as? String
+                    if (!msg.isNullOrBlank()) {
+                        textParts.add(msg)
+                    }
+                    val uriStr = item["uri"] as? String
+                    if (!uriStr.isNullOrBlank()) {
+                        uris.add(Uri.parse(uriStr))
+                    }
+                }
+                "memory" -> {
+                    val bytes = coerceByteArray(item["bytes"])
+                    if (bytes != null && bytes.isNotEmpty()) {
+                        val fileName = (item["fileName"] as? String) ?: "shared_${UUID.randomUUID()}.bin"
+                        val tempFile = writeTempFile(context, bytes, fileName)
+                        val uri = XueHuaShareFileProvider.getUriForFile(
+                            context,
+                            tempFile,
+                            displayName = fileName,
+                            mimeType = item["mimeType"] as? String
+                        )
+                        uris.add(uri)
+                    }
+                }
+                else -> {
+                    val filePath = item["filePath"] as? String
+                    if (!filePath.isNullOrBlank()) {
+                        val file = File(filePath)
+                        if (file.exists()) {
+                            val uri = XueHuaShareFileProvider.getUriForFile(
+                                context,
+                                file,
+                                displayName = (item["fileName"] as? String) ?: file.name,
+                                mimeType = item["mimeType"] as? String
+                            )
+                            uris.add(uri)
+                        }
+                    }
+                }
+            }
+        }
+
+        val topText = (args["text"] as? String) ?: (args["uri"] as? String) ?: ""
+        if (topText.isNotBlank() && !textParts.contains(topText)) {
+            textParts.add(0, topText)
+        }
+
+        if (textParts.isEmpty() && uris.isEmpty()) {
+            result.success(
+                mapOf(
+                    "status" to "error",
+                    "message" to "No valid content to copy to Android clipboard."
+                )
+            )
+            return
+        }
+
+        val clip: ClipData = when {
+            textParts.isNotEmpty() && uris.isEmpty() -> {
+                ClipData.newPlainText(label, textParts.joinToString("\n"))
+            }
+            textParts.isEmpty() && uris.isNotEmpty() -> {
+                val first = uris.first()
+                val base = ClipData.newUri(context.contentResolver, label, first)
+                for (i in 1 until uris.size) {
+                    base.addItem(ClipData.Item(uris[i]))
+                }
+                base
+            }
+            else -> {
+                val base = ClipData.newPlainText(label, textParts.joinToString("\n"))
+                for (uri in uris) {
+                    base.addItem(ClipData.Item(uri))
+                }
+                base
+            }
+        }
+
+        // Grant read permission to the system clipboard consumer for content URIs.
+        for (uri in uris) {
+            try {
+                context.grantUriPermission(
+                    "com.android.systemui",
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) {
+            }
+        }
+
+        clipboard.setPrimaryClip(clip)
         result.success(
             mapOf(
                 "status" to if (isFallback) "fallbackExecuted" else "success",
@@ -441,6 +550,129 @@ class XueHuaNaviteSharePlugin :
                 "message" to "Copied content to Android system clipboard."
             )
         )
+    }
+
+    private fun handleFileExplorerShare(
+        context: Context,
+        args: Map<*, *>,
+        result: Result
+    ) {
+        try {
+            val rawItems = (args["items"] as? List<*>) ?: emptyList<Any?>()
+            var viewUri: Uri? = null
+            var mimeType: String = "*/*"
+
+            for (raw in rawItems) {
+                val item = raw as? Map<*, *> ?: continue
+                val type = item["type"] as? String ?: "file"
+                when (type) {
+                    "memory" -> {
+                        val bytes = coerceByteArray(item["bytes"])
+                        if (bytes != null && bytes.isNotEmpty()) {
+                            val fileName = (item["fileName"] as? String)
+                                ?: "shared_${UUID.randomUUID()}.bin"
+                            val tempFile = writeTempFile(context, bytes, fileName)
+                            mimeType = (item["mimeType"] as? String) ?: "application/octet-stream"
+                            viewUri = XueHuaShareFileProvider.getUriForFile(
+                                context,
+                                tempFile,
+                                displayName = fileName,
+                                mimeType = mimeType
+                            )
+                            break
+                        }
+                    }
+                    "text", "url" -> {
+                        // Skip non-file items for file explorer reveal.
+                    }
+                    else -> {
+                        val filePath = item["filePath"] as? String
+                        if (!filePath.isNullOrBlank()) {
+                            val file = File(filePath)
+                            if (file.exists()) {
+                                mimeType = (item["mimeType"] as? String) ?: "*/*"
+                                viewUri = XueHuaShareFileProvider.getUriForFile(
+                                    context,
+                                    file,
+                                    displayName = (item["fileName"] as? String) ?: file.name,
+                                    mimeType = mimeType
+                                )
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (viewUri == null) {
+                result.success(
+                    mapOf(
+                        "status" to "unavailable",
+                        "message" to "No local/memory file available for Android file explorer reveal."
+                    )
+                )
+                return
+            }
+
+            val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(viewUri, mimeType)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            val resolved = context.packageManager.queryIntentActivities(
+                viewIntent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
+            if (resolved.isEmpty()) {
+                result.success(
+                    mapOf(
+                        "status" to "unavailable",
+                        "message" to "No Android app available to open/reveal the shared file."
+                    )
+                )
+                return
+            }
+
+            for (info in resolved) {
+                context.grantUriPermission(
+                    info.activityInfo.packageName,
+                    viewUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
+
+            context.startActivity(Intent.createChooser(viewIntent, args["title"] as? String))
+            result.success(
+                mapOf(
+                    "status" to "success",
+                    "selectedActivityType" to "fileExplorer",
+                    "message" to "Opened Android viewer/chooser for shared file."
+                )
+            )
+        } catch (e: Exception) {
+            result.success(
+                mapOf(
+                    "status" to "error",
+                    "message" to "Android fileExplorer failed: ${e.localizedMessage ?: e.javaClass.simpleName}"
+                )
+            )
+        }
+    }
+
+    private fun coerceByteArray(value: Any?): ByteArray? {
+        return when (value) {
+            is ByteArray -> value
+            is List<*> -> {
+                val out = ByteArray(value.size)
+                for (i in value.indices) {
+                    val n = value[i] as? Number ?: return null
+                    out[i] = n.toByte()
+                }
+                out
+            }
+            else -> null
+        }
     }
 
     private fun handleMailShare(context: Context, args: Map<*, *>, result: Result) {

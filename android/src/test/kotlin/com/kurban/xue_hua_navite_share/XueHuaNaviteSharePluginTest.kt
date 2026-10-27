@@ -23,6 +23,10 @@ internal class XueHuaNaviteSharePluginTest {
         assertEquals("android", map["platform"])
         assertEquals(true, map["supportsSystemShareSheet"])
         assertEquals(true, map["supportsFileSharing"])
+        val services = map["availableServices"] as List<*>
+        assertTrue(services.contains("systemClipboard"))
+        assertTrue(services.contains("fileExplorer"))
+        assertTrue(services.contains("systemSheet"))
     }
 
     @Test

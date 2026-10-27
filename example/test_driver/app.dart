@@ -51,19 +51,20 @@ Future<void> main() async {
           return jsonEncode(result.toMap());
         case 'system_sheet_text':
           // Windows/Linux: systemSheet falls back to clipboard / mailto.
-          // macOS/iOS: NSSharingServicePicker / UIActivityViewController are
-          // modal and would hang automation — use clipboard instead.
-          if (Platform.isMacOS || Platform.isIOS) {
+          // macOS/iOS/Android: system share UI is modal and would hang
+          // automation — use clipboard instead.
+          if (Platform.isMacOS || Platform.isIOS || Platform.isAndroid) {
             final result = await plugin.shareToService(
               ShareTargetService.systemClipboard,
               const ShareParams(
-                text: 'flutter_driver systemSheet text smoke (darwin clipboard)',
+                text:
+                    'flutter_driver systemSheet text smoke (non-modal clipboard)',
                 subject: 'Driver sheet',
                 title: 'Sheet share',
               ),
             );
             final map = result.toMap();
-            map['darwinNonBlockingPath'] = 'systemClipboard';
+            map['nonBlockingPath'] = 'systemClipboard';
             return jsonEncode(map);
           }
           final result = await plugin.shareText(

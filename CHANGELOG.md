@@ -1,3 +1,8 @@
+## 1.0.6
+
+* Android: clipboard copies text, URLs, files, and memory items (was text-only); advertise and implement `fileExplorer` reveal/open.
+* Android: flutter_driver + integration smoke across API 28/30/34/36; skip modal systemSheet paths in automation.
+
 ## 1.0.5
 
 * macOS: `getCapabilities` returns ShareTargetService wire names (`mail`, `airDrop`, …) instead of raw NSSharingService identifiers.
