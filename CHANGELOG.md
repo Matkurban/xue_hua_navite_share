@@ -1,3 +1,7 @@
+## 1.0.7
+
+* iOS: expand smoke/UI integration_test coverage and flutter drive; verified on ios17/18/26/27.
+
 ## 1.0.6
 
 * Android: clipboard copies text, URLs, files, and memory items (was text-only); advertise and implement `fileExplorer` reveal/open.

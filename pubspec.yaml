@@ -1,6 +1,6 @@
 name: xue_hua_navite_share
 description: "A comprehensive cross-platform native share Flutter plugin supporting Android, iOS, macOS, Windows, Linux, and Web."
-version: 1.0.6
+version: 1.0.7
 homepage: https://github.com/Matkurban/xue_hua_navite_share
 repository: https://github.com/Matkurban/xue_hua_navite_share
 issue_tracker: https://github.com/Matkurban/xue_hua_navite_share/issues
